@@ -11,7 +11,7 @@
 ### dtm_catalog.R
 #### The final version of the code we used to create the digital terrain model. Previous versions did not use the LAScatalog function from the lidR package and the lack of a buffer between squares of point cloud data lead to empty spots (with missing data) in the final product. This file also includes filtering out "birds" in the sky and points that appeared below the surface of the point cloud which leads to a smoother, more accurate model.
 
-### dsm_catalog.R
+### dsmcatalog.R
 #### Similar to the dtm file except that the rasterize_canopy function from the lidR packaged is used to create a model of the canopy.
 
 ### watershed_delineation.R
