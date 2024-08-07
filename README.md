@@ -21,7 +21,7 @@
 #### While creating the lake water budget model, we were interested in how to model the groundwater. This file uses known water table elvation data collected at UNDERC to plot groundwater data across time and across lakes (at different elevations). 
 
 ### lake_elv_testing.R
-#### The flyover that collected the LiDAR data for the DTM gave us the lake surface elevation for that point in time. As lake volume changes so will the lake surface elevation so using data collected by UNDERC we can calculate the lake surface elevations across time.
+#### The flyover that collected the LiDAR data for the DTM gave us the lake surface elevation for that point in time. As lake volume changes so will the lake surface elevation. Using data collected by UNDERC, we can calculate the lake surface elevations across time.
 
 ### LWBmodel_getting_data.R 
 #### Gathers, organizes, and interpolates missing data needed as forcings for the model. Sources include PRISM climate group and data collected by UNDERC researchers onsite.
