@@ -9,16 +9,16 @@
 ## Description of R files:
 
 ### dtm_catalog.R
-#### The final version of the code we used to create the digital terrain model. Previous versions did not use the LAScatalog function from the lidR package and the lack of a buffer between squares of point cloud data lead to empty spots (with missing data) in the final product. This file also includes filtering out "birds" in the sky and points that appeared below the surface of the point cloud which leads to a smoother, more accurate model.
+#### The final version of the code we used to create the digital terrain model. Previous versions did not use the LAScatalog function from the lidR package and the lack of a buffer between squares of point cloud data led to empty spots (with missing data) in the final product. This file also includes filtering out "birds" in the sky and points that appeared below the surface of the point cloud which leads to a smoother, more accurate model.
 
 ### dsmcatalog.R
 #### Similar to the dtm file except that the rasterize_canopy function from the lidR packaged is used to create a model of the canopy.
 
 ### watershed_delineation.R
-#### Learning how to delinate watersheds from the dtm. Following along this tutorial with our data: https://vt-hydroinformatics.github.io/rgeowatersheds.html#create-flow-accumulation-and-pointer-grids
+#### Learning how to delineate watersheds from the dtm. Following along this tutorial with our data: https://vt-hydroinformatics.github.io/rgeowatersheds.html#create-flow-accumulation-and-pointer-grids
 
 ### WTE_test.R
-#### While creating the lake water budget model, we were interested in how to model the groundwater. This file uses known water table elvation data collected at UNDERC to plot groundwater data across time and across lakes (at different elevations). 
+#### While creating the lake water budget model, we were interested in how to model the groundwater. This file uses known water table elevation data collected at UNDERC to plot groundwater data across time and across lakes (at different elevations). 
 
 ### lake_elv_testing.R
 #### The flyover that collected the LiDAR data for the DTM gave us the lake surface elevation for that point in time. As lake volume changes so will the lake surface elevation. Using data collected by UNDERC, we can calculate the lake surface elevations across time. This allows us to compare volumes of lakes calculated from our ODE versus volumes from pressure measurements.
