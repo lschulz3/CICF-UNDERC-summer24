@@ -61,6 +61,61 @@ for (i in 1:length(staff_gauges$lakeID)){
   
 matplot(x = final_frame$date_range, y = cbind(final_frame[,1:8]), type = "h", pch = "*", lty = 1, lwd = 5, col = height.colors(8), xlab = "Date", ylab = "Lake heights [m]")
 
+##manual for CR
+date_range <- seq(as.Date("2013-05-10"), as.Date("2022-08-25"), by = "days")
+
+staff_gauges <- dbTable("STAFF_GAUGES")
+staff_gauges <- staff_gauges %>% arrange(staff_gauges$dateSample)
+
+staff_gauges_CR <- filter(staff_gauges, staff_gauges$lakeID == "CR")
+
+i = 0
+
+curr_h <- c()
+final_h <- rep(NA, length = length(date_range))
+j = 1
+
+while (i < length(date_range)){
+  i = i + 1
+  while (date_range[i] == as.Date(staff_gauges_CR$dateSample[j]) & j < length(staff_gauges_CR$dateSample)){
+    curr_h <- c(curr_h, staff_gauges_CR$waterHeight_m[j])
+    j = j + 1
+  }
+  final_h[i] = mean(curr_h) + longer_lake_list$lake_surface_elevation[12]
+  print(final_h[i])
+  curr_h = c()
+}
+
+volumes <- rep(NA, length = length(date_range))
+for (i in 1:length(date_range)){
+  lake_volume = longer_lake_list$lake_surface_area[12] * (final_h[i] - lake_bot_elv)
+  volumes[i] = lake_volume
+}
+
+date_range <- seq(as.Date("2002-08-25"), as.Date("2022-09-25"), by = "days")
+diff_frame_manual <- data_frame(time = 0:7336, Date = date_range, vol_flux = LAKE[,"12"])
+diff_frame_manual$Date[1] <- NA
+
+i = 1
+j = 1
+vol_press <- rep(NA, length = length(diff_frame_manual$time))
+
+while (i < length(diff_frame_manual$time)){
+  i = i + 1
+  while (diff_frame_manual$Date[i] != press_frame_CR$date_range[j] & j < length(press_frame_CR$date_range)){
+    j = j + 1
+  }
+  if (j == length(press_frame_CR$date_range)){
+    j = 1
+  }else{
+    vol_press[i] = press_frame_CR$volumes[j]
+  }}
+
+diff_frame <- data_frame(diff_frame, vol_press)
+diff_frame_no_na <- na.omit(diff_frame)
+
+
+
 ###using pressure measurements
 pressure_table <- sensordbTable("HOBO_PRESS_CORR")
 pressure_table <- filter(pressure_table, !is.na(pressure_table$cleanedPress_kPa))
@@ -109,20 +164,21 @@ press_at_lake_surface_initial = 101325 * ((1 - (2.25577 * (10^-5) * (lake_surfac
 press_at_lake_bot_inital = press_at_lake_surface_initial + ((longer_lake_list$avg_depth[12] * water_density * 9.8 )/1000) #[kpa]
 
 heights <- rep(NA, length = length(press_frame_CR$date_range))
+lake_depth <- heights
 
 for (i in 1:length(press_frame_CR$date_range)){
-  lake_depth = 1000 * ((9.8 * water_density)^-1) * press_frame_CR$pressure[i]
-  surface_height = lake_bot_elv + lake_depth
+  lake_depth[i] = 1000 * ((9.8 * water_density)^-1) * (press_frame_CR$pressure[i] - press_at_lake_surface_initial)
+  surface_height = lake_bot_elv + lake_depth[i]
   heights[i] = surface_height
 }
 
-press_frame_CR <- data_frame(press_frame_CR, heights)
+press_frame_CR <- data_frame(press_frame_CR, heights, lake_depth)
 
 volumes <- rep(NA, length = length(press_frame_CR$date_range))
 ini_diff <- 255587
 
 for (i in 1:length(press_frame_CR$date_range)){
-  lake_volume = longer_lake_list$lake_surface_area[12] * (heights[i] - lake_bot_elv)
+  lake_volume = longer_lake_list$lake_surface_area[12] * (lake_depth[i] + longer_lake_list$avg_depth[12]) #(heights[i] - lake_bot_elv)
   volumes[i] = lake_volume - avg_diff
 }
 
@@ -162,7 +218,7 @@ per_diff_abs <- 100 * abs(difference/diff_frame_no_na$vol_flux)
 plot(x = diff_frame_no_na$Date, y = perc_diff, xlab = "Date", ylab = "Percent Difference in Volume", main = "Percent Differnce in Volume for Lake CR")
 
 
-avg_diff <- mean(perc_diff)
+avg_diff <- mean(difference)
 start_press <- (volumes[367] + 296499.5)
 ini_diff <- start_press - initial_volumes[12]
 
@@ -193,4 +249,19 @@ avg_diff_slope <- mean(abs(slope_frame_CR$slope_press - slope_frame_CR$slope_flu
 slope_frame_CR <- data_frame(slope_frame_CR, slope_diff = slope_press - slope_flux)
 matplot(slope_frame_CR$Date, slope_frame_CR$slope_diff, xlab = "Date", ylab = "difference", main = "Lake CR difference in slope", type = "l", lty = 1)
 
+## comparing intial volumes
 
+vol_table <- data_frame(lake_id = longer_lake_list$lake_id, estimated_vol = initial_volumes)
+lake_byth_vol = rep(NA, length = length(longer_lake_list$lake_id))
+for (i in 1:length(vol_table$lake_id)){
+  j = 1
+  while (vol_table$lake_id[i] != lake_byth$lakeID[j] & j < length(lake_byth$lakeID)){
+    j = j + 1
+  }
+  lake_byth_vol[i] = lake_byth$volumeToBottom_m3[j]
+}
+vol_table <- data_frame(vol_table, lake_byth_vol)
+vol_table$lake_byth_vol[12] = lake_byth$volumeToBottom3D_m3[25]
+diff_vols <- vol_table$estimated_vol - as.numeric(vol_table$lake_byth_vol)
+perc_diff_vols <- 100 * (diff_vols / as.numeric(vol_table$lake_byth_vol))
+plot(x = 1:length(vol_table$lake_id), y = perc_diff_vols, xlab = "Lakes", ylab = "percent difference", main = "Percent Differnce in Volumes, estimated cylindircal vs lake byth MFE")
